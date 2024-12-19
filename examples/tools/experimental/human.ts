@@ -11,8 +11,13 @@ import { z } from "zod";
 export class HumanTool extends Tool<StringToolOutput> {
   name = "HumanTool";
   description = `
-  This tool is used whenever the user's input is unclear, ambiguous, or incomplete. 
-  The agent MUST invoke this tool when additional clarification is required to proceed. 
+  This tool is strictly used whenever the user's input is unclear, ambiguous, or incomplete. 
+  The assistant 
+  MUST NOT ask the user for clarification directly as an assistant message. Instead, it 
+  must invoke this tool to obtain the necessary details. If at any point the assistant 
+  finds the user’s request ambiguous, vague, incomplete, or unclear, the assistant 
+  should call this HumanTool.
+ 
   The output must adhere strictly to the following structure:
     - Thought: A single-line description of the need for clarification.
     - Function Name: HumanTool
