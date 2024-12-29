@@ -11,45 +11,48 @@ import { z } from "zod";
 export class HumanTool extends Tool<StringToolOutput> {
   name = "HumanTool";
   description = `
-  This tool is strictly used whenever the user's input is unclear, ambiguous, or incomplete. 
-  The assistant 
-  MUST NOT ask the user for clarification directly as an assistant message. Instead, it 
-  must invoke this tool to obtain the necessary details. If at any point the assistant 
-  finds the user’s request ambiguous, vague, incomplete, or unclear, the assistant 
-  should call this HumanTool.
- 
-  The output must adhere strictly to the following structure:
-    - Thought: A single-line description of the need for clarification.
-    - Function Name: HumanTool
-    - Function Input: { "message": "Your question to the user for clarification." }
-    - Function Output: The user's response in JSON format.
+  This tool enables initial information gathering and basic clarifications at the start of interactions.
+  It should be used as the first point of contact when the agent needs to understand user preferences,
+  requirements, or constraints before beginning the planning process.
+
+  PRIMARY USE CASES:
+  1. Initial information gathering
+  2. Basic preference collection
+  3. Constraint identification
+  4. General clarifications before planning begins
+
+  The output must adhere to this structure:
+  - Thought: A clear description of what initial information is needed
+  - Function Name: HumanTool
+  - Function Input: { "message": "Your question to the user." }
+  - Function Output: The user's response in JSON format
+
   Examples:
-    - Example 1:
-      Input: "What is the weather?"
-      Thought: "The user's request lacks a location. I need to ask for clarification."
-      Function Name: HumanTool
-      Function Input: { "message": "Could you provide the location for which you would like to know the weather?" }
-      Function Output: { "clarification": "Santa Fe, Argentina" }
-      Final Answer: The current weather in Santa Fe, Argentina is 17.3°C with a relative humidity of 48% and a wind speed of 10.1 km/h.
 
-    - Example 2:
-      Input: "Can you help me?"
-      Thought: "The user's request is too vague. I need to ask for more details."
-      Function Name: HumanTool
-      Function Input: { "message": "Could you clarify what kind of help you need?" }
-      Function Output: { "clarification": "I need help understanding how to use the project management tool." }
-      Final Answer: Sure, I can help you with the project management tool. Let me know which feature you'd like to learn about or if you'd like a general overview.
+  - Example (Initial Query):
+    Input: "Help me plan a trip to Europe"
+    Thought: "Need to understand basic preferences before starting plan"
+    Function Name: HumanTool
+    Function Input: { "message": "Could you tell me your preferred type of activities (cultural, outdoor, etc.) and any specific cities you're interested in?" }
+    Function Output: { "clarification": "I enjoy cultural activities and would like to visit Prague" }
 
-    - Example 3:
-      Input: "Translate this sentence."
-      Thought: "The user's request is incomplete. I need to ask for the sentence they want translated."
-      Function Name: HumanTool
-      Function Input: { "message": "Could you specify the sentence you would like me to translate?" }
-      Function Output: { "clarification": "Translate 'Hello, how are you?' to French." }
-      Final Answer: The French translation of 'Hello, how are you?' is 'Bonjour, comment vas-tu?'
+  - Example (Constraint Identification):
+    Input: "Create a weekend itinerary"
+    Thought: "Need to understand time and preference constraints"
+    Function Name: HumanTool
+    Function Input: { "message": "What kind of activities interest you and do you have any time constraints I should know about?" }
+    Function Output: { "clarification": "I prefer outdoor activities and have Saturday from 9 AM to 6 PM" }
 
-  Note: Do NOT attempt to guess or provide incomplete responses. Always use this tool when in doubt to ensure accurate and meaningful interactions.
-`;
+  USAGE GUIDELINES:
+  1. Use at the START of interactions
+  2. Focus on gathering INITIAL information
+  3. Keep questions open-ended but specific
+  4. Avoid asking about plan details - that comes later with InterventionTool
+  5. Gather enough information to start creating options
+
+  Note: This tool is for initial information gathering only. Once you have basic information
+  and start creating plans, switch to InterventionTool for refinements and choices.
+  `;
 
   public readonly emitter: Emitter<ToolEvents<ToolInput<this>, StringToolOutput>> =
     Emitter.root.child({

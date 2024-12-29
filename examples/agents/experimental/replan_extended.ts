@@ -1,12 +1,11 @@
 import "dotenv/config.js";
 import { FrameworkError } from "bee-agent-framework/errors";
-import { DuckDuckGoSearchTool } from "bee-agent-framework/tools/search/duckDuckGoSearch";
-import { OpenMeteoTool } from "bee-agent-framework/tools/weather/openMeteo";
 import { UnconstrainedMemory } from "bee-agent-framework/memory/unconstrainedMemory";
 import { createConsoleReader } from "examples/helpers/io.js";
 import { RePlanAgent } from "bee-agent-framework/agents/experimental/replan/agent";
 import { OllamaChatLLM } from "bee-agent-framework/adapters/ollama/chat";
 import { OpenAIChatLLM } from "bee-agent-framework/adapters/openai/chat";
+import { GroqChatLLM } from "bee-agent-framework/adapters/groq/chat";
 import { InterventionTool } from "../../tools/experimental/intervention.js";
 import { HumanTool } from "../../tools/experimental/human.js";
 import { InterventionManager } from "../../managers/interventionManager.js";
@@ -17,23 +16,27 @@ const reader = createConsoleReader();
 
 // Initialize LLM
 //const llm = new OllamaChatLLM({
-//  modelId: "granite3.1-dense:8b",
+//  modelId: "llama3.1:latest",
 //});
-const llm = new OpenAIChatLLM({
-  modelId: "gpt-4o-mini",
-});
+//const llm = new OpenAIChatLLM({
+//  modelId: "gpt-4o-mini",
+//});
+
+const llm = new GroqChatLLM();
 
 const memory = new UnconstrainedMemory();
 
 const humanTool = new HumanTool(reader);
 
+const interventionTool = new InterventionTool(reader);
+
 const agent = new RePlanAgent({
   llm,
   memory,
-  tools: [new OpenMeteoTool(), humanTool],
+  tools: [humanTool, interventionTool],
 });
 
-//const interventionManager = new InterventionManager(Emitter.root, interventionTool);
+const interventionManager = new InterventionManager(Emitter.root, interventionTool);
 
 try {
   for await (const { prompt } of reader) {
